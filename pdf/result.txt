@@ -1,0 +1,666 @@
+The YouTube Video Recommendation System
+
+James Davidson
+
+Google Inc
+
+davidson@google.com
+
+Benjamin Liebald
+
+Google Inc
+
+liebald@google.com
+
+Junning Liu
+Google Inc
+
+ljn@google.com
+
+Palash Nandy
+
+Google Inc
+
+palash@google.com
+
+Taylor Van Vleet
+tvv@google.com
+
+Google Inc
+
+Categories and Subject Descriptors
+H.3 [Information Systems]: Information Storage and Re-
+trieval; H.4 [Information Systems]: Information Systems
+Applications
+
+General Terms
+Algorithms, Measurement
+
+1.
+
+INTRODUCTION
+
+Founded in February 2005, YouTube has quickly grown
+to be the world°Øs most popular video site. Users come
+to YouTube to discover, watch and share originally-created
+videos. YouTube provides a forum for people to engage with
+video content across the globe and acts as a distribution plat-
+form for content creators. Every day, over a billion video
+plays are done across millions of videos by millions of users,
+
+and every minute, users upload more than 24 hours of video
+to YouTube.
+
+In this paper, we present our video recommendation sys-
+tem, which delivers personalized sets of videos to signed
+in users based on their previous activity on the YouTube
+site (while recommendations are also available in a limited
+form to signed out users, we focus on signed in users for
+the remainder of this paper). Recommendations are fea-
+tured in two primary locations: The YouTube home page
+(http://www.youtube.com) and the °∞Browse°± page at http:
+//www.youtube.com/videos. An example of how recom-
+mendations are presented on the homepage can be found
+in Figure 1.
+1.1 Goals
+
+In its present form, our recommendation system is a top-N
+recommender rather than a predictor [4]. We review how we
+evaluate the success of the recommendation system in sec-
+tion 3 of this paper. An additional primary goal for YouTube
+recommendations is to maintain user privacy and provide
+explicit control over personalized user data that our back-
+end systems expose. We review how we address this goal in
+section 2.5.
+1.2 Challenges
+
+There are many aspects of the YouTube site that make
+recommending interesting and personally relevant videos to
+users a unique challenge: Videos as they are uploaded by
+users often have no or very poor metadata. The video cor-
+pus size is roughly on the same order of magnitude as the
+number of active users. Furthermore, videos on YouTube
+are mostly short form (under 10 minutes in length). User
+interactions are thus relatively short and noisy. Compare
+this to user interactions with movie rental or purchase sites
+
+The YouTube Video Recommendation System
+
+James Davidson
+
+Google Inc
+
+davidson@google.com
+
+Benjamin Liebald
+
+Google Inc
+
+liebald@google.com
+
+Junning Liu
+Google Inc
+
+ljn@google.com
+
+Palash Nandy
+
+Google Inc
+
+palash@google.com
+
+Taylor Van Vleet
+tvv@google.com
+
+Google Inc
+
+Categories and Subject Descriptors
+H.3 [Information Systems]: Information Storage and Re-
+trieval; H.4 [Information Systems]: Information Systems
+Applications
+
+General Terms
+Algorithms, Measurement
+
+1.
+
+INTRODUCTION
+
+Founded in February 2005, YouTube has quickly grown
+to be the world°Øs most popular video site. Users come
+to YouTube to discover, watch and share originally-created
+videos. YouTube provides a forum for people to engage with
+video content across the globe and acts as a distribution plat-
+form for content creators. Every day, over a billion video
+plays are done across millions of videos by millions of users,
+
+and every minute, users upload more than 24 hours of video
+to YouTube.
+
+In this paper, we present our video recommendation sys-
+tem, which delivers personalized sets of videos to signed
+in users based on their previous activity on the YouTube
+site (while recommendations are also available in a limited
+form to signed out users, we focus on signed in users for
+the remainder of this paper). Recommendations are fea-
+tured in two primary locations: The YouTube home page
+(http://www.youtube.com) and the °∞Browse°± page at http:
+//www.youtube.com/videos. An example of how recom-
+mendations are presented on the homepage can be found
+in Figure 1.
+1.1 Goals
+
+In its present form, our recommendation system is a top-N
+recommender rather than a predictor [4]. We review how we
+evaluate the success of the recommendation system in sec-
+tion 3 of this paper. An additional primary goal for YouTube
+recommendations is to maintain user privacy and provide
+explicit control over personalized user data that our back-
+end systems expose. We review how we address this goal in
+section 2.5.
+1.2 Challenges
+
+There are many aspects of the YouTube site that make
+recommending interesting and personally relevant videos to
+users a unique challenge: Videos as they are uploaded by
+users often have no or very poor metadata. The video cor-
+pus size is roughly on the same order of magnitude as the
+number of active users. Furthermore, videos on YouTube
+are mostly short form (under 10 minutes in length). User
+interactions are thus relatively short and noisy. Compare
+this to user interactions with movie rental or purchase sites
+
+The YouTube Video Recommendation System
+
+James Davidson
+
+Google Inc
+
+davidson@google.com
+
+Benjamin Liebald
+
+Google Inc
+
+liebald@google.com
+
+Junning Liu
+Google Inc
+
+ljn@google.com
+
+Palash Nandy
+
+Google Inc
+
+palash@google.com
+
+Taylor Van Vleet
+tvv@google.com
+
+Google Inc
+
+Categories and Subject Descriptors
+H.3 [Information Systems]: Information Storage and Re-
+trieval; H.4 [Information Systems]: Information Systems
+Applications
+
+General Terms
+Algorithms, Measurement
+
+1.
+
+INTRODUCTION
+
+Founded in February 2005, YouTube has quickly grown
+to be the world°Øs most popular video site. Users come
+to YouTube to discover, watch and share originally-created
+videos. YouTube provides a forum for people to engage with
+video content across the globe and acts as a distribution plat-
+form for content creators. Every day, over a billion video
+plays are done across millions of videos by millions of users,
+
+and every minute, users upload more than 24 hours of video
+to YouTube.
+
+In this paper, we present our video recommendation sys-
+tem, which delivers personalized sets of videos to signed
+in users based on their previous activity on the YouTube
+site (while recommendations are also available in a limited
+form to signed out users, we focus on signed in users for
+the remainder of this paper). Recommendations are fea-
+tured in two primary locations: The YouTube home page
+(http://www.youtube.com) and the °∞Browse°± page at http:
+//www.youtube.com/videos. An example of how recom-
+mendations are presented on the homepage can be found
+in Figure 1.
+1.1 Goals
+
+In its present form, our recommendation system is a top-N
+recommender rather than a predictor [4]. We review how we
+evaluate the success of the recommendation system in sec-
+tion 3 of this paper. An additional primary goal for YouTube
+recommendations is to maintain user privacy and provide
+explicit control over personalized user data that our back-
+end systems expose. We review how we address this goal in
+section 2.5.
+1.2 Challenges
+
+There are many aspects of the YouTube site that make
+recommending interesting and personally relevant videos to
+users a unique challenge: Videos as they are uploaded by
+users often have no or very poor metadata. The video cor-
+pus size is roughly on the same order of magnitude as the
+number of active users. Furthermore, videos on YouTube
+are mostly short form (under 10 minutes in length). User
+interactions are thus relatively short and noisy. Compare
+this to user interactions with movie rental or purchase sites
+
+Figure 1: A screenshot of the recommendations module on the YouTube home page
+
+2. SYSTEM DESIGN
+
+The overall design of the recommendation system is guided
+by the goals and challenges outlined above: We want rec-
+ommendations to be reasonably recent and fresh, as well as
+diverse and relevant to the user°Øs recent actions. In addi-
+tion, it°Øs important that users understand why a video was
+recommended to them.
+
+The set of recommended videos videos is generated by
+using a user°Øs personal activity (watched, favorited, liked
+videos) as seeds and expanding the set of videos by travers-
+ing a co-visitation based graph of videos. The set of videos
+is then ranked using a variety of signals for relevance and
+diversity.
+
+From an engineering perspective, we want individual com-
+ponents of the system to be decoupled from each other, al-
+lowing them to be understood and debugged in isolation.
+Given that our system is part of the larger YouTube ecosys-
+tem, recommendations also needs to be resilient to failure
+and degrade gracefully in case of partial failures. As a con-
+sequence, we strive to minimize complexity in the overall
+system.
+2.1
+
+Input data
+
+During the generation of personalized video recommenda-
+tions we consider a number of data sources. In general, there
+are two broad classes of data to consider: 1) content data,
+such as the raw video streams and video metadata such as
+title, description, etc, and 2) user activity data, which can
+further be divided into explicit and implicit categories. Ex-
+plicit activities include rating a video, favoriting/liking a
+video, or subscribing to an uploader. Implicit activities are
+datum generated as a result of users watching and interact-
+ing with videos, e.g., user started to watch a video and user
+watched a large portion of the video (long watch).
+
+In all cases, the data that we have at our disposal is quite
+noisy: Video metadata can be non-existent, incomplete, out-
+dated, or simply incorrect; user data only captures a fraction
+of a user°Øs activity on the site and only indirectly measures
+a user°Øs engagement and happiness, e.g., the fact that a user
+watched a video in its entirety is not enough to conclude
+that she actually liked it. The length of the video and user
+
+r(vi, vj) =
+
+cij
+
+f (vi, vj)
+
+(1)
+
+where ci and cj are the total occurrence counts across
+all sessions for videos vi and vj, respectively. f (vi, vj) is
+a normalization function that takes the °∞global popularity°±
+of both the seed video and the candidate video into ac-
+count. One of the simplest normalization functions is to
+simply divide by the product of the videos°Ø global popular-
+ity: f (vi, vj) = ci °§ cj. Other normalization functions are
+possible. See [6] for an overview of possible choices. When
+using the simple product of cardinalities for normalization,
+ci is the same for all candidate related videos and can be
+ignored in our setting, so we are normalizing only by the
+candidate°Øs global popularity. This essentially favors less
+popular videos over popular ones.
+
+We then pick the set of related videos Ri for a given seed
+video vi as the top N candidate videos ranked by their scores
+r(vi, vj). Note that in addition to only picking the top N
+videos, we also impose a minimum score threshold. Hence,
+there are many videos for which we will not be able to com-
+pute a reliable set of related videos this way because their
+overall view count (and thereby co-visitation counts with
+other videos) is too low.
+
+C1(S) = [
+
+Ri
+
+vi ° S
+
+(2)
+
+Cn(S) = [
+
+Ri
+
+(3)
+
+Cf inal = (
+
+Ci) \ S
+
+(4)
+
+N
+
+[
+
+i=0
+
+Due to the high branching factor of the related videos
+graph we found that expanding over a small distance yielded
+a broad and diverse set of recommendations even for users
+with a small seed set. Note that each video in the candi-
+date set is associated with one or more videos in the seed
+set. We keep track of these seed to candidate associations
+for ranking purposes and to provide explanations of the rec-
+ommendations to the user.
+2.4 Ranking
+
+Video quality signals are those signals that we use to judge
+the likelihood that the video will be appreciated irrespective
+
+of the user. These signals include view count (the total num-
+ber of times a video has been watched), the ratings of the
+video, commenting, favoriting and sharing activity around
+the video, and upload time.
+
+Presentation of recommendations is an important part of
+the overall user experience. Figure 1 shows how recommen-
+dations are currently presented on YouTube°Øs home page.
+There are a few features worth noting: First, all recom-
+mended videos are displayed with a thumbnail and their
+(possibly truncated) title, as well as information about video
+age and popularity. This is similar to other sections on the
+homepage and helps users decide quickly whether they are
+interested in a video. Furthermore, we add an explanation
+with a link to the seed video which triggered the recom-
+mendation. Last, we give users control over where and how
+many recommendations they want to see on the homepage.
+As mentioned in section 2.4, we compute a ranked list of
+recommendations but only display a subset at serving time.
+This enables us to provide new and previously unseen rec-
+ommendations every time the user comes back to the site,
+even if the underlying recommendations have not been re-
+computed.
+2.6 System Implementation
+
+We choose a batch-oriented pre-computation approach rather
+
+The actual implementation of YouTube°Øs recommendation
+system can be divided into three main parts: 1) data collec-
+tion, 2) recommendation generation and 3) recommendation
+serving.
+
+The raw data signals previously mentioned in section 2.1
+are initially deposited into YouTube°Øs logs. These logs are
+processed, signals extracted, and then stored on a per user
+
+basis in a Bigtable [2]. We currently handle millions of users
+and tens of billions of activity events with a total footprint
+of several terabytes of data.
+
+Recommendations are generated through a series of MapRe-
+
+duces computations [3] that walk through the user/video
+graph to accumulate and score recommendations as described
+in section 2.
+
+3. EVALUATION
+
+4. RESULTS
+
+The recommendations feature has been part of the YouTube
+
+homepage for more than a year and has been very successful
+in context of our stated goals. For example, recommenda-
+tions account for about 60% of all video clicks from the home
+page.
+
+Comparing the performance of recommendations with other
+
+5. ACKNOWLEDGMENTS
+
+We would like to thank John Harding, Louis Perrochon
+
+and Hunter Walk for support and comments.
+
+6. ADDITIONAL AUTHORS
+
+Additional authors: Ullas Gargi, Sujoy Gupta, Yu He,
+Mike Lambert, Blake Livingston, Dasarathi Sampath (all
+Google Inc, emails {ullas, sujoy, yuhe, lambert, blivingston,
+dasarathi}@google.com).
+
+association rules between sets of items in large
+databases. SIGMOD Rec., 22(2):207®C216, 1993.
+
+[2] F. Chang, J. Dean, S. Ghemawat, W. C. Hsieh, D. A.
+
+processing on large clusters. In OSDI °Ø04, pages
+137®C150, 2004.
+
+[4] M. Deshpande and G. Karypis. Item-based top-n
+
+recommendation algorithms. ACM Trans. Inf. Syst.,
+22(1):143®C177, 2004.
+
+http://googleblog.blogspot.com/2008/09/
+search-evaluation-at-google.html, 2008.
+
+[6] E. Spertus, M. Sahami, and O. Buyukkokten.
+
+Evaluating similarity measures: a large-scale study in
+the orkut social network. In KDD °Ø05, pages 678®C684,
+New York, NY, USA, 2005. ACM.
+
+The YouTube Video Recommendation System
+
+James Davidson
+
+Google Inc
+
+davidson@google.com
+
+Benjamin Liebald
+
+Google Inc
+
+liebald@google.com
+
+Junning Liu
+Google Inc
+
+ljn@google.com
+
+Palash Nandy
+
+Google Inc
+
+palash@google.com
+
+Taylor Van Vleet
+tvv@google.com
+
+Google Inc
+
+The YouTube Video Recommendation System
+
+James Davidson
+
+Google Inc
+
+davidson@google.com
+
+Benjamin Liebald
+
+Google Inc
+
+liebald@google.com
+
+Junning Liu
+Google Inc
+
+ljn@google.com
+
+Palash Nandy
+
+Google Inc
+
+palash@google.com
+
+Taylor Van Vleet
+tvv@google.com
+
+Google Inc
+
+The YouTube Video Recommendation System
+
+James Davidson
+
+Google Inc
+
+davidson@google.com
+
+Benjamin Liebald
+
+Google Inc
+
+liebald@google.com
+
+Junning Liu
+Google Inc
+
+ljn@google.com
+
+Palash Nandy
+
+Google Inc
+
+palash@google.com
+
+Taylor Van Vleet
+tvv@google.com
+
+Google Inc
+
+ABSTRACT
+We discuss the video recommendation system in use at
+YouTube, the world‚Äôs most popular online video commu-
+nity. The system recommends personalized sets of videos to
+users based on their activity on the site. We discuss some
+of the unique challenges that the system faces and how we
+address them. In addition, we provide details on the exper-
+imentation and evaluation framework used to test and tune
+new algorithms. We also present some of the Ô¨Åndings from
+these experiments.
+
+Categories and Subject Descriptors
+H.3 [Information Systems]: Information Storage and Re-
+trieval; H.4 [Information Systems]: Information Systems
+Applications
+
+General Terms
+Algorithms, Measurement
+
+1.
+
+INTRODUCTION
+
+Personalized recommendations are a key method for infor-
+mation retrieval and content discovery in today‚Äôs information-
+rich environment. Combined with pure search (querying)
+and browsing (directed or non-directed), they allow users
+facing a huge amount of information to navigate that infor-
+mation in an eÔ¨Écient and satisfying way. As the largest and
+most-popular online video community with vast amounts of
+user-generated content, YouTube presents some unique op-
+portunities and challenges for content discovery and recom-
+mendations.
+
+Founded in February 2005, YouTube has quickly grown
+to be the world°Øs most popular video site. Users come
+to YouTube to discover, watch and share originally-created
+videos. YouTube provides a forum for people to engage with
+video content across the globe and acts as a distribution plat-
+form for content creators. Every day, over a billion video
+plays are done across millions of videos by millions of users,
+
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proÔ¨Åt or commercial advantage and that copies
+bear this notice and the full citation on the Ô¨Årst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciÔ¨Åc
+permission and/or a fee.
+RecSys2010, September 26‚Äì30, 2010, Barcelona, Spain.
+Copyright 2010 ACM 978-1-60558-906-0/10/09 ...$10.00.
+
+and every minute, users upload more than 24 hours of video
+to YouTube.
+
+In this paper, we present our video recommendation sys-
+tem, which delivers personalized sets of videos to signed
+in users based on their previous activity on the YouTube
+site (while recommendations are also available in a limited
+form to signed out users, we focus on signed in users for
+the remainder of this paper). Recommendations are fea-
+tured in two primary locations: The YouTube home page
+(http://www.youtube.com) and the °∞Browse°± page at http:
+//www.youtube.com/videos. An example of how recom-
+mendations are presented on the homepage can be found
+in Figure 1.
+1.1 Goals
+
+Users come to YouTube for a wide variety of reasons which
+span a spectrum from more to less speciÔ¨Åc: To watch a
+single video that they found elsewhere (direct navigation), to
+Ô¨Ånd speciÔ¨Åc videos around a topic (search and goal-oriented
+browse), or to just be entertained by content that they Ô¨Ånd
+interesting. Personalized Video Recommendations are one
+way to address this last use case, which we dub unarticulated
+want.
+
+As such, the goal of the system is to provide personalized
+recommendations that help users Ô¨Ånd high quality videos rel-
+evant to their interests. In order to keep users entertained
+and engaged, it is imperative that these recommendations
+are updated regularly and reÔ¨Çect a user‚Äôs recent activity on
+the site. They are also meant to highlight the broad spec-
+trum of content that is available on the site.
+
+In its present form, our recommendation system is a top-N
+recommender rather than a predictor [4]. We review how we
+evaluate the success of the recommendation system in sec-
+tion 3 of this paper. An additional primary goal for YouTube
+recommendations is to maintain user privacy and provide
+explicit control over personalized user data that our back-
+end systems expose. We review how we address this goal in
+section 2.5.
+1.2 Challenges
+
+There are many aspects of the YouTube site that make
+recommending interesting and personally relevant videos to
+users a unique challenge: Videos as they are uploaded by
+users often have no or very poor metadata. The video cor-
+pus size is roughly on the same order of magnitude as the
+number of active users. Furthermore, videos on YouTube
+are mostly short form (under 10 minutes in length). User
+interactions are thus relatively short and noisy. Compare
+this to user interactions with movie rental or purchase sites
+
